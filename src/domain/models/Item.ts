@@ -10,5 +10,5 @@ export interface Item {
   rented: boolean;
   rentedBy?: User;
   isInPool: boolean;
-  poolId: string;
+  poolId?: string;
 }
