@@ -3,5 +3,7 @@ import { Pool } from '../models/Pool';
 
 export interface IPoolRepository {
   addItemToPool(item: Item): Promise<Item>;
+  updatePool(pool: Pool): Promise<boolean>;
+  getById(poolId: string): Promise<Pool | null>;
   getAll(): Promise<Pool[]>;
 }
