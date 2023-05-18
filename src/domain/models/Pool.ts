@@ -6,5 +6,4 @@ export interface Pool {
   availableItems: Item[];
   rentedItems: Item[];
   itemCategory: ItemCategory;
-  currentPrice: number;
 }

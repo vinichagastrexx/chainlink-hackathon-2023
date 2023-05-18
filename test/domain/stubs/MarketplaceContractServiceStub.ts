@@ -10,4 +10,8 @@ export class MarketplaceContractServiceStub implements IMarketplaceContractServi
   addToPool(item: Item): Promise<boolean> {
     return new Promise(() => null);
   }
+
+  removeFromPool(item: Item): Promise<boolean> {
+    return new Promise(() => null);
+  }
 }
