@@ -8,5 +8,4 @@ export const PoolMock: Pool = {
     id: 'categoryId',
     name: 'categoryName',
   },
-  currentPrice: 1,
 };
