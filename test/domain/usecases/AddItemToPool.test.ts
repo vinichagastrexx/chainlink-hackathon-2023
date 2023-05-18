@@ -3,6 +3,7 @@ import { IItemRepository } from '../../../src/domain/repositories/ItemRepository
 import { AddItemToPool } from '../../../src/domain/usecases/AddItemToPool';
 import { IPoolRepository } from '../../../src/domain/repositories/PoolRepository';
 import { IMarketplaceContractService } from '../../../src/domain/services/MarketplaceContractService';
+import { Pool } from '../../../src/domain/models/Pool';
 
 const item: Item = {
   id: 'valid_id',
@@ -30,6 +31,10 @@ class ItemRepositoryStub implements IItemRepository {
 
 class PoolRepositoryStub implements IPoolRepository {
   async addItemToPool(item: Item): Promise<Item> {
+    return new Promise(() => null);
+  }
+
+  async getAll(): Promise<Pool[]> {
     return new Promise(() => null);
   }
 }
