@@ -7,7 +7,7 @@ export class PoolRepositoryStub implements IPoolRepository {
     return new Promise(() => null);
   }
 
-  addItemToPool(item: Item): Promise<Item> {
+  addItemToPool(item: Item, poolId: string): Promise<Pool> {
     return new Promise(() => null);
   }
 

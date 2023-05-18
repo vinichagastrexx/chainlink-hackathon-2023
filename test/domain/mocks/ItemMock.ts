@@ -14,6 +14,5 @@ export const ItemMock: Item = {
     walletAddress: 'walletAdress',
   },
   rented: false,
-  isInPool: true,
-  poolId: 'poolId',
+  isInPool: false,
 };

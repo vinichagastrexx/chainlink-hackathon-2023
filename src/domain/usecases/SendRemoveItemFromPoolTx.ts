@@ -1,4 +1,3 @@
-import { IItemRepository } from '../repositories/ItemRepository';
 import { IPoolRepository } from '../repositories/PoolRepository';
 import { IMarketplaceContractService } from '../services/MarketplaceContractService';
 import { Item } from '../models/Item';
@@ -15,9 +14,8 @@ interface IResponse {
   pool: Pool;
 }
 
-export class RemoveItemFromPool {
+export class SendRemoveItemFromPoolTx {
   constructor(
-    private itemRepository: IItemRepository,
     private poolRepository: IPoolRepository,
     private marketplaceContractService: IMarketplaceContractService,
   ) {}
@@ -42,7 +40,7 @@ export class RemoveItemFromPool {
     const MAX_RETRIES = 3;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        await this.marketplaceContractService.removeFromPool(item);
+        await this.marketplaceContractService.removeFromPool(item, pool);
         break;
       } catch (e) {
         if (attempt === MAX_RETRIES - 1) {
@@ -51,10 +49,9 @@ export class RemoveItemFromPool {
       }
     }
 
-    pool.availableItems.splice(itemIndex, 1);
-
-    await this.poolRepository.updatePool(pool);
-
-    return { item, pool };
+    return {
+      item,
+      pool,
+    };
   }
 }
