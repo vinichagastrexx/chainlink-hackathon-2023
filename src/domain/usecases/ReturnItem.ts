@@ -1,8 +1,8 @@
+import { Item } from '../models/Item';
+import { IPoolRepository } from '../repositories/PoolRepository';
 import { IRentRepository } from '../repositories/RentRepository';
 import { IItemRepository } from '../repositories/ItemRepository';
 import { IMarketplaceContractService } from '../services/MarketplaceContractService';
-import { Item } from '../models/Item';
-import { IPoolRepository } from '../repositories/PoolRepository';
 
 interface IRequest {
   rentId: string;
@@ -28,17 +28,17 @@ export class ReturnItem {
       throw new Error('Rent not Found');
     }
 
-    if (rent.renter.walletAddress !== userWallet) {
+    if (rent.rentee.walletAddress !== userWallet) {
       throw new Error('You are not the renter of this Item');
     }
 
     try {
       await this.marketplaceContractService.returnItem(rent.item, rent.pool);
+      await this.rentRepository.finishRent(rent.id);
     } catch (e) {
       throw new Error('An error occurred while trying to return the item in the marketplace contract');
     }
 
-    //todo criar factories das entidades
     const item = (await this.itemRepository.findById(rent.item.id)) as unknown as Item;
     item.isInPool = false;
     item.poolId = undefined;
