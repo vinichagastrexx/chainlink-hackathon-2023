@@ -1,12 +1,12 @@
-import express from 'express';
+import { MongoHelper } from '../infra/db/mongodb/helpers/mongoHelper';
+import env from './config/env';
+import app from './config/app';
 
-const app = express();
-const PORT = 3000;
-
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+MongoHelper.connect(env.mongoUrl)
+  .then(() => {
+    const PORT = env.port;
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  })
+  .catch(console.error);
