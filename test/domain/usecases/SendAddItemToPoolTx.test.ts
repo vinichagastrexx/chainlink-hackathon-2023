@@ -1,4 +1,4 @@
-import { PoolMock } from '../mocks/PoolMock';
+import { PoolWithoutItemsMock } from '../mocks/PoolMock';
 import { IItemRepository } from '../../../src/domain/repositories/ItemRepository';
 import { SendAddItemToPoolTx } from '../../../src/domain/usecases/SendAddItemToPoolTx';
 import { IPoolRepository } from '../../../src/domain/repositories/PoolRepository';
@@ -62,7 +62,7 @@ describe('SendSendAddItemToPoolTxTx UseCase', () => {
   it('should retry 3 times if marketplace contract service throws', async () => {
     const requestMock = { itemId: 'valid_id', poolId: 'valid_pool_id' };
     jest.spyOn(itemRepositoryStub, 'findById').mockResolvedValueOnce(item);
-    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolMock);
+    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolWithoutItemsMock);
     jest.spyOn(marketplaceContractServiceStub, 'addToPool').mockImplementation(() => {
       throw new Error('Error in contract service');
     });

@@ -39,7 +39,7 @@ export class ReturnItem {
     }
 
     //todo criar factories das entidades
-    const item = this.itemRepository.findById(rent.item.id) as unknown as Item;
+    const item = (await this.itemRepository.findById(rent.item.id)) as unknown as Item;
     item.isInPool = false;
     item.poolId = undefined;
     item.rented = false;

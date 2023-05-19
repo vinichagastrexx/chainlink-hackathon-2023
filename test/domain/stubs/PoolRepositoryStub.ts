@@ -18,4 +18,8 @@ export class PoolRepositoryStub implements IPoolRepository {
   updatePool(pool: Pool): Promise<boolean> {
     return new Promise(() => null);
   }
+
+  removeItemFromPool(item: Item, poolId: string): Promise<boolean> {
+    return new Promise(() => null);
+  }
 }

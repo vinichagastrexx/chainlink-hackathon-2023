@@ -1,9 +1,9 @@
 import { ListPools } from '../../../src/domain/usecases/ListPools';
 import { IPoolRepository } from '../../../src/domain/repositories/PoolRepository';
-import { PoolMock } from '../mocks/PoolMock';
+import { PoolWithoutItemsMock } from '../mocks/PoolMock';
 import { PoolRepositoryStub } from '../stubs/PoolRepositoryStub';
 
-const poolsMock = [PoolMock];
+const poolsMock = [PoolWithoutItemsMock];
 let listPools: ListPools;
 let poolRepositoryStub: IPoolRepository;
 
@@ -16,7 +16,7 @@ describe('List Pools UseCase', () => {
   it('should return all pools', async () => {
     jest.spyOn(poolRepositoryStub, 'getAll').mockResolvedValueOnce(poolsMock);
     const response = await listPools.execute();
-    expect(response).toEqual([PoolMock]);
+    expect(response).toEqual([PoolWithoutItemsMock]);
   });
   it('should throw if PoolRepository throws', async () => {
     jest.spyOn(poolRepositoryStub, 'getAll').mockImplementationOnce(() => {

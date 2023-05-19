@@ -1,4 +1,4 @@
-import { PoolMock } from './../mocks/PoolMock';
+import { PoolWithItemsMock, PoolWithoutItemsMock } from './../mocks/PoolMock';
 import { IItemRepository } from '../../../src/domain/repositories/ItemRepository';
 import { FinishAddItemToPoolOp } from '../../../src/domain/usecases/FinishAddItemToPoolOp';
 import { IPoolRepository } from '../../../src/domain/repositories/PoolRepository';
@@ -42,7 +42,7 @@ describe('Finish Add Item To Pool Operation UseCase', () => {
 
   it('should throw if PoolRepository throws', async () => {
     jest.spyOn(itemRepositoryStub, 'findById').mockResolvedValueOnce(ItemMock);
-    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolMock);
+    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolWithoutItemsMock);
     jest.spyOn(itemRepositoryStub, 'updateItem').mockResolvedValueOnce(true);
     jest.spyOn(poolRepositoryStub, 'addItemToPool').mockImplementationOnce(() => {
       throw new Error();
@@ -56,9 +56,9 @@ describe('Finish Add Item To Pool Operation UseCase', () => {
 
   it('should add the item to the pool if it exists and it is not in the pool', async () => {
     jest.spyOn(itemRepositoryStub, 'findById').mockResolvedValueOnce(ItemMock);
-    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolMock);
+    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolWithoutItemsMock);
     jest.spyOn(itemRepositoryStub, 'updateItem').mockResolvedValueOnce(true);
-    jest.spyOn(poolRepositoryStub, 'addItemToPool').mockResolvedValueOnce({ ...PoolMock, availableItems: [ItemMock] });
+    jest.spyOn(poolRepositoryStub, 'addItemToPool').mockResolvedValueOnce(PoolWithItemsMock);
     const itemMock = { itemId: 'valid_id', poolId: 'valid_pool_id' };
     const response = await finishAddItemToPoolOp.execute(itemMock);
     expect(response.item.isInPool).toBe(true);

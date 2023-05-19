@@ -1,10 +1,10 @@
-import { ItemMock } from './../mocks/ItemMock';
 import { SendRemoveItemFromPoolTx } from './../../../src/domain/usecases/SendRemoveItemFromPoolTx';
 import { IPoolRepository } from '../../../src/domain/repositories/PoolRepository';
 import { IMarketplaceContractService } from '../../../src/domain/services/MarketplaceContractService';
 import { PoolRepositoryStub } from '../stubs/PoolRepositoryStub';
 import { MarketplaceContractServiceStub } from '../stubs/MarketplaceContractServiceStub';
-import { PoolMock } from '../mocks/PoolMock';
+import { PoolWithItemsMock, PoolWithoutItemsMock } from '../mocks/PoolMock';
+import { UserMockRenter } from '../mocks/UserMock';
 
 let sendRemoveItemFromPoolTx: SendRemoveItemFromPoolTx;
 let poolRepositoryStub: IPoolRepository;
@@ -26,14 +26,14 @@ describe('Remove Item from Pool UseCase', () => {
 
   it('should throw if the item is not in the available items list', async () => {
     const requestMock = { poolId: 'invalid_id', userWallet: 'valid_id', itemId: 'item-id' };
-    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolMock);
+    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolWithoutItemsMock);
     const response = sendRemoveItemFromPoolTx.execute(requestMock);
     await expect(response).rejects.toThrow('Item not found in the list of available itens');
   });
 
   it('should retry 3 times if marketplace contract service throws', async () => {
-    const requestMock = { poolId: 'invalid_id', userWallet: 'walletAdress', itemId: 'valid_id' };
-    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce({ ...PoolMock, availableItems: [ItemMock] });
+    const requestMock = { poolId: 'invalid_id', userWallet: UserMockRenter.walletAddress, itemId: 'valid_id' };
+    jest.spyOn(poolRepositoryStub, 'getById').mockResolvedValueOnce(PoolWithItemsMock);
     jest.spyOn(marketplaceContractServiceStub, 'removeFromPool').mockImplementation(() => {
       throw new Error('Error in contract service');
     });

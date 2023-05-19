@@ -6,8 +6,9 @@ export interface Rent {
   id: string;
   item: Item;
   pool: Pool;
-  renter: User;
+  rentee: User;
   rentalStartDate: Date;
-  rentalEndDate: Date;
-  rentPaid: number;
+  rentalEndDate?: Date;
+  rentPrice?: number;
+  rentPaid?: boolean;
 }
