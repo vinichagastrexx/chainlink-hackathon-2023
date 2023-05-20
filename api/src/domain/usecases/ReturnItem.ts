@@ -40,9 +40,7 @@ export class ReturnItem {
     }
 
     const item = (await this.itemRepository.findById(rent.item.id)) as unknown as Item;
-    item.isInPool = false;
     item.poolId = undefined;
-    item.rented = false;
     item.rentedBy = undefined;
 
     try {
