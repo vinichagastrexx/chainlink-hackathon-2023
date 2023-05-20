@@ -15,6 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@thirdweb-dev/sdk": "^3.10.16",
+    "@thirdweb-dev/wallets": "^0.2.21",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongodb": "^5.5.0"
