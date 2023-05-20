@@ -9,8 +9,11 @@ interface IRequest {
 }
 
 interface IResponse {
-  item: Item;
-  pool: Pool;
+  data: {
+    item: Item;
+    pool: Pool;
+  } | null;
+  error?: Error;
 }
 
 export class FinishAddItemToPoolOp {
@@ -24,12 +27,13 @@ export class FinishAddItemToPoolOp {
       throw new Error('An error occurred while trying to get item');
     }
 
-    if (!item) {
-      throw new Error('Item not Found');
-    }
+    console.log(item);
 
-    if (item.isInPool) {
-      throw new Error('Item is already in the pool');
+    if (!item) {
+      return {
+        data: null,
+        error: new Error('Item not Found'),
+      };
     }
 
     let pool: Pool | null;
@@ -40,27 +44,38 @@ export class FinishAddItemToPoolOp {
     }
 
     if (!pool) {
-      throw new Error('Pool not Found');
+      return {
+        data: null,
+        error: new Error('Pool not Found'),
+      };
+    }
+
+    const itemAlreadyInPool = await this.poolRepository.checkItemInPool(itemId, poolId);
+
+    if (itemAlreadyInPool) {
+      return {
+        data: null,
+        error: new Error('Item is already in the pool'),
+      };
     }
 
     const updatedItem: Item = {
       ...item,
-      isInPool: true,
       poolId: pool.id,
     };
 
-    pool.availableItems.push(item);
-
     try {
       await this.itemRepository.updateItem(updatedItem);
-      pool = await this.poolRepository.addItemToPool(item, poolId);
+      pool = await this.poolRepository.addItemToPool(item.id, poolId);
     } catch (e) {
       throw new Error('An error occurred while adding item to pool');
     }
 
     return {
-      item: updatedItem,
-      pool,
+      data: {
+        item: updatedItem,
+        pool,
+      },
     };
   }
 }

@@ -12,6 +12,14 @@ export class PoolMongoRepository implements IPoolRepository {
     return MongoHelper.map(insertedPool);
   }
 
+  async checkItemInPool(itemId: string, poolId: string): Promise<boolean> {
+    const poolCollection = await MongoHelper.getCollection('pools');
+    const pool = await poolCollection.findOne({
+      _id: new ObjectId(poolId),
+    });
+    return pool?.availableItems.some((itemInPoolId: ObjectId) => itemInPoolId.equals(new ObjectId(itemId)));
+  }
+
   async updatePool(pool: Pool): Promise<boolean> {
     const itemCollection = MongoHelper.getCollection('pools');
     const result = await itemCollection.updateOne({ _id: new ObjectId(pool.id) }, { $set: pool });
@@ -30,9 +38,12 @@ export class PoolMongoRepository implements IPoolRepository {
     return pool && MongoHelper.map(pool);
   }
 
-  async addItemToPool(item: Item, poolId: string): Promise<Pool> {
+  async addItemToPool(itemId: string, poolId: string): Promise<Pool> {
     const poolCollection = MongoHelper.getCollection('pools');
-    await poolCollection.updateOne({ _id: new ObjectId(poolId) }, { $addToSet: { availableItems: item } });
+    await poolCollection.updateOne(
+      { _id: new ObjectId(poolId) },
+      { $addToSet: { availableItems: new ObjectId(itemId) } },
+    );
     return (await this.getById(poolId)) as Pool;
   }
 

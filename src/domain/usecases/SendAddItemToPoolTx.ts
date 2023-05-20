@@ -3,7 +3,6 @@ import { IPoolRepository } from '../repositories/PoolRepository';
 import { Item } from '../models/Item';
 import { IMarketplaceContractService } from '../services/MarketplaceContractService';
 import { Pool } from '../models/Pool';
-import { ObjectId } from 'mongodb';
 
 interface IRequest {
   itemId: string;
@@ -52,7 +51,7 @@ export class SendAddItemToPoolTx {
       };
     }
 
-    const itemAlreadyInPool = pool.availableItems.some((poolItemId) => poolItemId.equals(new ObjectId(item?.id)));
+    const itemAlreadyInPool = await this.poolRepository.checkItemInPool(itemId, poolId);
 
     if (itemAlreadyInPool) {
       return {
