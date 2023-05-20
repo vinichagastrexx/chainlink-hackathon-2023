@@ -13,6 +13,6 @@ export const MongoHelper = {
 
   map<T>(collection: any): T {
     const { _id, ...collectionWithoutId } = collection;
-    return { ...collectionWithoutId, id: _id };
+    return { ...collectionWithoutId, id: _id.toString() };
   },
 };
