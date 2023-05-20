@@ -1,10 +1,9 @@
 import { User } from './User';
-import { ObjectId } from 'mongodb';
 
 export interface Rent {
-  id: ObjectId;
-  itemId: ObjectId;
-  poolId: ObjectId;
+  id: string;
+  itemId: string;
+  poolId: string;
   rentee: User;
   rentalStartDate: Date;
   rentalEndDate?: Date;

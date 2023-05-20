@@ -1,6 +1,4 @@
-import { ObjectId } from 'mongodb';
-
 export interface ItemCategory {
-  id: ObjectId;
+  id: string;
   name: string;
 }

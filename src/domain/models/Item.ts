@@ -1,9 +1,8 @@
 import { User } from './User';
 import { ItemCategory } from './ItemCategory';
-import { ObjectId } from 'mongodb';
 
 export interface Item {
-  id: ObjectId;
+  id: string;
   name: string;
   category: ItemCategory;
   nftId: string;

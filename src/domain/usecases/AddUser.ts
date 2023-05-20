@@ -1,6 +1,5 @@
 import { User } from '../models/User';
 import { IUserRepository } from '../repositories/UserRepository';
-import { ObjectId } from 'mongodb';
 
 interface IRequest {
   walletAddress: string;
@@ -30,7 +29,6 @@ export class AddUser {
       walletAddress,
       email,
       username,
-      id: new ObjectId(),
     };
 
     const savedUser = await this.userRepository.addUser(user);
