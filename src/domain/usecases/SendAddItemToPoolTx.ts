@@ -3,6 +3,7 @@ import { IPoolRepository } from '../repositories/PoolRepository';
 import { Item } from '../models/Item';
 import { IMarketplaceContractService } from '../services/MarketplaceContractService';
 import { Pool } from '../models/Pool';
+import { ObjectId } from 'mongodb';
 
 interface IRequest {
   itemId: string;
@@ -10,8 +11,11 @@ interface IRequest {
 }
 
 interface IResponse {
-  item: Item;
-  pool: Pool;
+  data: {
+    item: Item;
+    pool: Pool;
+  } | null;
+  error?: Error;
 }
 
 export class SendAddItemToPoolTx {
@@ -28,13 +32,11 @@ export class SendAddItemToPoolTx {
     } catch (e) {
       throw new Error('An error occurred while trying to add item to pool');
     }
-
     if (!item) {
-      throw new Error('Item not Found');
-    }
-
-    if (item.isInPool) {
-      throw new Error('Item is already in the pool');
+      return {
+        data: null,
+        error: new Error('Item not Found'),
+      };
     }
 
     let pool: Pool | null;
@@ -43,9 +45,20 @@ export class SendAddItemToPoolTx {
     } catch (e) {
       throw new Error('An error occurred while trying to get pool');
     }
-
     if (!pool) {
-      throw new Error('Pool not Found');
+      return {
+        data: null,
+        error: new Error('Pool not Found'),
+      };
+    }
+
+    const itemAlreadyInPool = pool.availableItems.some((poolItemId) => poolItemId.equals(new ObjectId(item?.id)));
+
+    if (itemAlreadyInPool) {
+      return {
+        data: null,
+        error: new Error('Item is already in the pool'),
+      };
     }
 
     const MAX_RETRIES = 3;
@@ -61,8 +74,10 @@ export class SendAddItemToPoolTx {
     }
 
     return {
-      item,
-      pool,
+      data: {
+        item,
+        pool,
+      },
     };
   }
 }

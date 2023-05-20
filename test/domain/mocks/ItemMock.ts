@@ -1,15 +1,14 @@
 import { Item } from '../../../src/domain/models/Item';
 import { UserMockRenter } from './UserMock';
+import { ObjectId } from 'mongodb';
 
 export const ItemMock: Item = {
-  id: 'valid_id',
+  id: new ObjectId(),
   name: 'valid_name',
   category: {
     name: 'teste',
-    id: 'id',
+    id: new ObjectId(),
   },
   nftId: 'nftId',
   owner: UserMockRenter,
-  rented: false,
-  isInPool: false,
 };
