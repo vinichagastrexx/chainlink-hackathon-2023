@@ -1,9 +1,8 @@
-import { Item } from './Item';
-import { ItemCategory } from './ItemCategory';
+import { ObjectId } from 'mongodb';
 
 export interface Pool {
-  id: string;
-  availableItems: Item[];
-  rentedItems: Item[];
-  itemCategory: ItemCategory;
+  id: ObjectId;
+  availableItems: ObjectId[];
+  rentedItems: ObjectId[];
+  categoryId: ObjectId;
 }

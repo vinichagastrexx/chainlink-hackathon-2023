@@ -1,14 +1,13 @@
 import { User } from './User';
 import { ItemCategory } from './ItemCategory';
+import { ObjectId } from 'mongodb';
 
 export interface Item {
-  id: string;
+  id: ObjectId;
   name: string;
   category: ItemCategory;
   nftId: string;
   owner: User;
-  rented: boolean;
   rentedBy?: User;
-  isInPool: boolean;
   poolId?: string;
 }
