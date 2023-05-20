@@ -3,7 +3,6 @@ import { Item } from '../../../domain/models/Item';
 import { Pool } from '../../../domain/models/Pool';
 import { Rent } from '../../../domain/models/Rent';
 import { ItemMock } from '../../../../test/domain/mocks/ItemMock';
-import { ObjectId } from 'mongodb';
 
 export class MarketplaceContractService implements IMarketplaceContractService {
   async addToPool(item: Item, pool: Pool): Promise<boolean> {
@@ -17,15 +16,15 @@ export class MarketplaceContractService implements IMarketplaceContractService {
     console.log('Item rented from pool in smart contract', { pool });
     const item = ItemMock;
     const rent: Rent = {
-      id: new ObjectId('mockedRentId'),
+      id: 'mockedRentId',
       rentee: {
-        id: new ObjectId('mockedRenterId'),
+        id: 'mockedRenterId',
         username: 'mockedRenterName',
         walletAddress: 'walletAddress',
       },
-      poolId: new ObjectId('poolId'),
+      poolId: 'poolId',
       rentalStartDate: new Date(),
-      itemId: new ObjectId('itemId'),
+      itemId: 'itemId',
     };
 
     return {
