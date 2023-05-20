@@ -27,7 +27,6 @@ export class FinishAddItemToPoolOp {
       throw new Error('An error occurred while trying to get item');
     }
 
-    console.log(item);
 
     if (!item) {
       return {
