@@ -13,29 +13,17 @@ contract NFTRentMarketplace is
     ConfirmedOwner,
     IERC721Receiver
 {
-    //VRF
-    event VRFRequestSent(uint256 requestId, uint32 numWords);
-    event VRFRequestFulfilled(uint256 requestId, uint256[] randomWords);
-    struct VRFRequestStatus {
-        bool fulfilled;
-        bool exists;
-        uint256[] randomWords;
-    }
-    mapping(uint256 => VRFRequestStatus) public s_requests;
     VRFCoordinatorV2Interface public COORDINATOR;
     uint64 private s_subscriptionId;
     uint256[] public requestIds;
-    uint256 public lastRequestId;
     bytes32 private keyHash =
         0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
     uint32 private callbackGasLimit = 100000;
     uint16 private requestConfirmations = 3;
     uint32 private numWords = 1;
 
-    //NFTRentMarketplace
     struct Item {
         uint256 nftId;
-        uint256 poolId;
         bool isRented;
         uint256 categoryId;
         address payable owner;
@@ -51,11 +39,9 @@ contract NFTRentMarketplace is
         uint256[] rentedItems;
     }
     enum RentStatus {
-        REQUESTED, // Solicitação de aluguel feita
-        IN_PROGRESS, // Aluguel em andamento
-        COMPLETED, // Aluguel concluído
-        ERROR, // Erro ocorrido durante o processo de aluguel
-        CANCELLED // Aluguel cancelado
+        REQUESTED,
+        IN_PROGRESS,
+        COMPLETED
     }
     struct RentRequest {
         bool fulfilled;
@@ -66,7 +52,6 @@ contract NFTRentMarketplace is
         RentStatus status;
     }
     mapping(uint256 => RentRequest) public rentRequests;
-    uint256[] public rentRequestsIds;
     mapping(uint256 => Pool) private pools;
     mapping(uint256 => Item) private items;
 
@@ -76,7 +61,22 @@ contract NFTRentMarketplace is
         address requester,
         uint256 poolId
     );
-    event RentStarted(uint256 indexed requestId);
+    event RentStarted(
+        uint256 indexed requestId,
+        uint256 poolId,
+        address rentee,
+        uint256 itemId
+    );
+    event RentFinished(
+        uint256 indexed requestId,
+        uint256 poolId,
+        address rentee,
+        uint256 itemId
+    );
+    event RandomNumberGenerated(
+        uint256 indexed requestId,
+        uint256 randomNumber
+    );
     event PoolEnabled(uint256 poolId);
     event PoolCreated(uint256 indexed poolId);
     event ItemAddedToPool(uint256 itemId, uint256 poolId);
@@ -97,37 +97,14 @@ contract NFTRentMarketplace is
         nftContractAddress = _nftContractAddress;
     }
 
-    function requestRandomWords()
-        external
-        onlyOwner
-        returns (uint256 requestId)
-    {
-        requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
-        );
-        s_requests[requestId] = VRFRequestStatus({
-            randomWords: new uint256[](0),
-            exists: true,
-            fulfilled: false
-        });
-        requestIds.push(requestId);
-        lastRequestId = requestId;
-        emit VRFRequestSent(requestId, numWords);
-        return requestId;
-    }
-
     function fulfillRandomWords(
         uint256 _requestId,
         uint256[] memory _randomWords
     ) internal override {
-        require(rentRequests[_requestId].exists, "request not found");
+        require(rentRequests[_requestId].exists, "Request not found");
         rentRequests[_requestId].fulfilled = true;
         rentRequests[_requestId].randomNumber = _randomWords[0];
-        emit VRFRequestFulfilled(_requestId, _randomWords);
+        emit RandomNumberGenerated(_requestId, _randomWords[0]);
     }
 
     function getRentRequestStatus(
@@ -171,8 +148,7 @@ contract NFTRentMarketplace is
             owner: payable(msg.sender),
             categoryId: _categoryId,
             rentee: address(0),
-            isRented: false,
-            poolId: 0
+            isRented: false
         });
         emit ItemCreated(_nftId, _categoryId, msg.sender);
     }
@@ -214,7 +190,6 @@ contract NFTRentMarketplace is
             item.owner == msg.sender,
             "Only item owner can add it to a pool"
         );
-        require(item.poolId == 0, "Item already in a pool");
 
         ERC721 erc721 = ERC721(nftContractAddress);
         erc721.safeTransferFrom(msg.sender, address(this), _itemNftId);
@@ -228,7 +203,6 @@ contract NFTRentMarketplace is
     ) public override returns (bytes4) {
         uint256 _categoryId = items[tokenId].categoryId;
         pools[_categoryId].availableItems.push(tokenId);
-        items[tokenId].poolId = _categoryId;
 
         emit ItemAddedToPool(tokenId, _categoryId);
 
@@ -253,8 +227,6 @@ contract NFTRentMarketplace is
             callbackGasLimit,
             numWords
         );
-        rentRequestsIds.push(requestId);
-        lastRequestId = requestId;
         rentRequests[requestId] = RentRequest({
             randomNumber: 0,
             exists: true,
@@ -268,24 +240,21 @@ contract NFTRentMarketplace is
     }
 
     function startRentItem(uint256 requestId, uint256 randomResult) public {
-        require(rentRequests[requestId].exists, "request not found");
+        require(rentRequests[requestId].exists, "Request not found");
         require(
             rentRequests[requestId].fulfilled,
-            "random number not yet available"
+            "Random number not yet available"
         );
 
         uint256 poolId = rentRequests[requestId].poolId;
-
         Pool storage pool = pools[poolId];
 
         uint256 index = randomResult % pool.availableItems.length;
         uint256 selectedItemId = pool.availableItems[index];
 
-        // Update the item and pool
         Item storage item = items[selectedItemId];
         item.isRented = true;
         item.rentee = rentRequests[requestId].rentee;
-        emit RentStarted(requestId);
         pool.rentedItems.push(selectedItemId);
         pool.availableItems[index] = pool.availableItems[
             pool.availableItems.length - 1
@@ -302,5 +271,46 @@ contract NFTRentMarketplace is
                 pool.availableItems[index] != selectedItemId,
             "Item not removed from available items"
         );
+        emit RentStarted(requestId, poolId, item.rentee, item.nftId);
+    }
+
+    function finishRentItem(uint256 itemId) public {
+        Item storage item = items[itemId];
+        require(item.isRented, "Item is not currently rented");
+        require(
+            item.rentee == msg.sender,
+            "Only the rentee can finish the rent"
+        );
+
+        uint256 poolId = item.categoryId;
+        Pool storage pool = pools[poolId];
+
+        uint256 rentedIndex = findIndex(pool.rentedItems, itemId);
+        require(
+            rentedIndex < pool.rentedItems.length,
+            "Item not found in rented items"
+        );
+
+        pool.rentedItems[rentedIndex] = pool.rentedItems[
+            pool.rentedItems.length - 1
+        ];
+        pool.rentedItems.pop();
+        pool.availableItems.push(itemId);
+        item.isRented = false;
+        item.rentee = address(0);
+
+        emit RentFinished(itemId, poolId, msg.sender, itemId);
+    }
+
+    function findIndex(
+        uint256[] storage array,
+        uint256 value
+    ) internal view returns (uint256) {
+        for (uint256 i = 0; i < array.length; i++) {
+            if (array[i] == value) {
+                return i;
+            }
+        }
+        return array.length;
     }
 }
